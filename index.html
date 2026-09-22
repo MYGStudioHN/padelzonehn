@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Padel Zone</title>
+
+<!-- Ícono de la pantalla de inicio -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="iconos/icono-192.png">
+<meta name="theme-color" content="#080A0D">
+
+<!-- iOS: abre sin barras del navegador -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Padel Zone">
+<meta name="mobile-web-app-capable" content="yes">
+
+<style>
+  :root{
+    --negro:#080A0D; --hueso:#EDF1F5; --gris:#78848F; --linea:#2C353F; --azul:#2F6FE4;
+    box-sizing:border-box;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:var(--negro)}
+  body{
+    font-family:'Barlow',system-ui,-apple-system,sans-serif;
+    color:var(--hueso); overflow:hidden;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  iframe{width:100%;height:100%;border:0;display:block;background:var(--negro)}
+
+  .carga{
+    position:fixed;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:16px;background:var(--negro);
+    transition:opacity .35s; z-index:2;
+  }
+  .carga.fuera{opacity:0;pointer-events:none}
+  .marca{font-size:14px;letter-spacing:.24em;font-weight:700;text-transform:uppercase}
+  .marca span{color:var(--gris);font-weight:500}
+  .punto{width:34px;height:4px;border-radius:100px;background:var(--linea);overflow:hidden}
+  .punto i{display:block;height:100%;width:40%;background:var(--azul);border-radius:100px;
+    animation:va 1s ease-in-out infinite alternate}
+  @keyframes va{from{transform:translateX(-60%)}to{transform:translateX(220%)}}
+  @media (prefers-reduced-motion:reduce){.punto i{animation:none;width:100%}}
+
+  .error{
+    position:fixed;inset:0;display:none;flex-direction:column;align-items:center;
+    justify-content:center;gap:12px;padding:30px;text-align:center;background:var(--negro);z-index:3;
+  }
+  .error p{color:var(--gris);font-size:14px;line-height:1.55;max-width:34ch}
+  .error a{color:var(--azul);font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="carga" id="carga">
+  <div class="marca">PADEL<span>ZONE</span></div>
+  <div class="punto"><i></i></div>
+</div>
+
+<div class="error" id="error">
+  <div class="marca">PADEL<span>ZONE</span></div>
+  <p id="error-txt">No se pudo abrir la aplicación.</p>
+  <a id="error-link" href="#">Abrir en el navegador</a>
+</div>
+
+<iframe id="app" title="Padel Zone" allow="clipboard-write; fullscreen"></iframe>
+
+<script>
+/**
+ * Lanzador de Padel Zone.
+ *
+ * Existe por una razón concreta: Apps Script sirve sus vistas dentro de un
+ * iframe de Google, así que el ícono de "Agregar a pantalla de inicio" lo
+ * define el documento de Google, no el nuestro. Esta página sí es nuestra:
+ * el teléfono guarda este ícono y este nombre, y adentro carga la app.
+ *
+ * Pasa los parámetros tal cual, así un mismo archivo sirve las tres vistas:
+ *   index.html?t=TOKEN     → tarjeta del socio
+ *   index.html?v=escaner   → escáner de recepción
+ *   index.html?v=armado    → armar partida grupal
+ */
+
+// ── Única línea que hay que editar ───────────────────────────
+const APP = "https://script.google.com/macros/s/PEGA_AQUI_TU_ID/exec";
+// ─────────────────────────────────────────────────────────────
+
+const params = location.search || "";
+const destino = APP + params;
+
+const marco = document.getElementById("app");
+const carga = document.getElementById("carga");
+
+if (APP.indexOf("PEGA_AQUI") >= 0) {
+  mostrarError("Falta configurar la URL de la aplicación en index.html.", null);
+} else {
+  marco.src = destino;
+
+  marco.addEventListener("load", () => {
+    carga.classList.add("fuera");
+    clearTimeout(reloj);
+  });
+
+  // Si en 12 segundos no cargó, damos salida en vez de dejar el logo girando
+  var reloj = setTimeout(() => {
+    mostrarError("La aplicación está tardando en responder.", destino);
+  }, 12000);
+}
+
+function mostrarError(msg, url) {
+  carga.classList.add("fuera");
+  const caja = document.getElementById("error");
+  caja.style.display = "flex";
+  document.getElementById("error-txt").textContent = msg;
+  const a = document.getElementById("error-link");
+  if (url) { a.href = url; } else { a.style.display = "none"; }
+}
+</script>
+</body>
+</html>
