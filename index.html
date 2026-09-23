@@ -85,7 +85,7 @@
  */
 
 // ── Única línea que hay que editar ───────────────────────────
-const APP = "https://script.google.com/macros/s/AKfycbz7PC8OK44DZIGdfrRVi0JLtWCPsCdlsPayW3IOiW20OmvnWVIEbkNXeFiec4_9G7nm/exec";
+const APP = "https://script.google.com/macros/s/PEGA_AQUI_TU_ID/exec";
 // ─────────────────────────────────────────────────────────────
 
 /**
@@ -110,7 +110,7 @@ const carga = document.getElementById("carga");
 if (APP.indexOf("PEGA_AQUI") >= 0) {
   mostrarError("Falta configurar la URL de la aplicación en index.html.", null);
 } else if (!params) {
-  mostrarError("Abrí primero el enlace que te enviaron por WhatsApp. Después podés agregar el ícono a la pantalla de inicio.", null);
+  mostrarError("Abrí el enlace que te enviaron por WhatsApp para ver tu membresía.", null);
 } else {
   marco.src = destino;
 
