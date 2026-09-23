@@ -85,10 +85,23 @@
  */
 
 // ── Única línea que hay que editar ───────────────────────────
-const APP = "https://script.google.com/macros/s/AKfycbz7PC8OK44DZIGdfrRVi0JLtWCPsCdlsPayW3IOiW20OmvnWVIEbkNXeFiec4_9G7nm/exec";
+const APP = "https://script.google.com/macros/s/PEGA_AQUI_TU_ID/exec";
 // ─────────────────────────────────────────────────────────────
 
-const params = location.search || "";
+/**
+ * El teléfono descarta los parámetros al agregar a pantalla de inicio:
+ * usa el start_url del manifest, no la dirección que estabas viendo.
+ * Por eso guardamos el destino la primera vez y lo recuperamos después.
+ */
+const CLAVE = "pz-destino";
+let params = location.search || "";
+
+if (params) {
+  try { localStorage.setItem(CLAVE, params); } catch (e) {}
+} else {
+  try { params = localStorage.getItem(CLAVE) || ""; } catch (e) {}
+}
+
 const destino = APP + params;
 
 const marco = document.getElementById("app");
@@ -96,6 +109,8 @@ const carga = document.getElementById("carga");
 
 if (APP.indexOf("PEGA_AQUI") >= 0) {
   mostrarError("Falta configurar la URL de la aplicación en index.html.", null);
+} else if (!params) {
+  mostrarError("Abrí primero el enlace que te enviaron por WhatsApp. Después podés agregar el ícono a la pantalla de inicio.", null);
 } else {
   marco.src = destino;
 
