@@ -53,12 +53,6 @@
   .error p{color:var(--gris);font-size:14px;line-height:1.55;max-width:34ch}
   .error a{color:var(--azul);font-size:14px}
 
-  .sello{
-    position:fixed;left:0;right:0;bottom:0;z-index:4;
-    padding:5px 8px calc(5px + env(safe-area-inset-bottom,0px));
-    font:10px/1.35 ui-monospace,Menlo,monospace;color:#5C6773;
-    background:rgba(8,10,13,.85);word-break:break-all;text-align:center;
-  }
 </style>
 </head>
 <body>
@@ -68,7 +62,6 @@
   <div class="punto"><i></i></div>
 </div>
 
-<div class="sello" id="sello"></div>
 
 <div class="error" id="error">
   <div class="marca">PADEL<span>ZONE</span></div>
@@ -78,6 +71,7 @@
 
 <iframe id="app" title="Padel Zone" allow="clipboard-write; fullscreen"></iframe>
 
+<script src="config.js"></script>
 <script>
 /**
  * Lanzador de Padel Zone.
@@ -93,9 +87,9 @@
  *   index.html?v=armado    → armar partida grupal
  */
 
-// ── Única línea que hay que editar ───────────────────────────
-const APP = "https://script.google.com/macros/s/AKfycbwYENQWO4zy7aQxYJMYs67liZop-7Be3_5v2zSbEd4vUBLcDU5CD7edRehgjsu6blYZ/exec";
-// ─────────────────────────────────────────────────────────────
+// La URL vive en config.js, no acá: así actualizar este archivo
+// no borra la configuración del club.
+const APP = (window.PZ_CONFIG && window.PZ_CONFIG.app) || "";
 
 /**
  * El teléfono descarta los parámetros al agregar a pantalla de inicio:
@@ -119,14 +113,11 @@ const destino = APP + params + (params ? "&" : "?") + "_=" + Date.now();
 const marco = document.getElementById("app");
 const carga = document.getElementById("carga");
 
-if (APP.indexOf("PEGA_AQUI") >= 0) {
-  if (sello) sello.textContent = "APP sin configurar · params: [" + params + "]";
-  mostrarError("Falta configurar la URL de la aplicación en index.html.", null);
+if (!APP || APP.indexOf("PEGA_AQUI") >= 0) {
+  mostrarError("Falta configurar la URL de la aplicación en config.js.", null);
 } else if (!params) {
-  if (sello) sello.textContent = "sin token · location: " + location.href;
   mostrarError("Abrí el enlace que te enviaron por WhatsApp para ver tu membresía.", null);
 } else {
-  if (sello) sello.textContent = "abre: " + destino;
   marco.src = destino;
 
   marco.addEventListener("load", () => {
