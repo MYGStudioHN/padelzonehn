@@ -71,65 +71,25 @@
 
 <iframe id="app" title="Padel Zone" allow="clipboard-write; fullscreen"></iframe>
 
-<script src="config.js"></script>
 <script>
 /**
  * Lanzador de Padel Zone.
  *
- * Existe por una razón concreta: Apps Script sirve sus vistas dentro de un
- * iframe de Google, así que el ícono de "Agregar a pantalla de inicio" lo
- * define el documento de Google, no el nuestro. Esta página sí es nuestra:
- * el teléfono guarda este ícono y este nombre, y adentro carga la app.
+ * Existe porque Apps Script sirve sus vistas dentro de un iframe de Google,
+ * así que el ícono de "Agregar a pantalla de inicio" toma el ícono de Google
+ * y no el nuestro. Esta página sí es nuestra: el teléfono guarda este ícono
+ * y este nombre, y adentro carga la app.
  *
- * Pasa los parámetros tal cual, así un mismo archivo sirve las tres vistas:
+ * Pasa los parámetros tal cual, así un mismo archivo sirve las vistas:
  *   index.html?t=TOKEN     → tarjeta del socio
  *   index.html?v=escaner   → escáner de recepción
  *   index.html?v=armado    → armar partida grupal
+ *   index.html?v=socios    → alta y cobro
  */
-
-// La URL vive en config.js, no acá: así actualizar este archivo
-// no borra la configuración del club.
-const APP = (window.PZ_CONFIG && window.PZ_CONFIG.app) || "";
-
-/**
- * El teléfono descarta los parámetros al agregar a pantalla de inicio:
- * usa el start_url del manifest, no la dirección que estabas viendo.
- * Por eso guardamos el destino la primera vez y lo recuperamos después.
- */
-const CLAVE = "pz-destino";
-let params = location.search || "";
-
-if (params) {
-  try { localStorage.setItem(CLAVE, params); } catch (e) {}
-} else {
-  try { params = localStorage.getItem(CLAVE) || ""; } catch (e) {}
-}
-
-// El navegador guarda la página que carga el iframe, y se queda con ella
-// aunque el sistema cambie. Un parámetro distinto en cada apertura obliga
-// a pedirla de nuevo: si no, el socio ve el saldo del día que la abrió.
-const destino = APP + params + (params ? "&" : "?") + "_=" + Date.now();
 
 const marco = document.getElementById("app");
 const carga = document.getElementById("carga");
-
-if (!APP || APP.indexOf("PEGA_AQUI") >= 0) {
-  mostrarError("Falta configurar la URL de la aplicación en config.js.", null);
-} else if (!params) {
-  mostrarError("Abrí el enlace que te enviaron por WhatsApp para ver tu membresía.", null);
-} else {
-  marco.src = destino;
-
-  marco.addEventListener("load", () => {
-    carga.classList.add("fuera");
-    clearTimeout(reloj);
-  });
-
-  // Si en 12 segundos no cargó, damos salida en vez de dejar el logo girando
-  var reloj = setTimeout(() => {
-    mostrarError("La aplicación está tardando en responder.", destino);
-  }, 12000);
-}
+let reloj = null;
 
 function mostrarError(msg, url) {
   carga.classList.add("fuera");
@@ -139,6 +99,47 @@ function mostrarError(msg, url) {
   const a = document.getElementById("error-link");
   if (url) { a.href = url; } else { a.style.display = "none"; }
 }
+
+function iniciar() {
+  const APP = (window.PZ_CONFIG && window.PZ_CONFIG.app) || "";
+
+  if (!APP || APP.indexOf("PEGA_AQUI") >= 0) {
+    mostrarError("Falta configurar la URL de la aplicación en config.js.", null);
+    return;
+  }
+
+  const params = location.search || "";
+  if (!params) {
+    mostrarError("Abrí el enlace que te enviaron por WhatsApp para ver tu membresía.", null);
+    return;
+  }
+
+  // El navegador guarda la página que carga el iframe y se queda con ella
+  // aunque el sistema cambie. Un parámetro distinto en cada apertura obliga
+  // a pedirla de nuevo: si no, el socio ve el saldo del día que la abrió.
+  const destino = APP + params + "&_=" + Date.now();
+
+  marco.addEventListener("load", () => {
+    carga.classList.add("fuera");
+    clearTimeout(reloj);
+  });
+
+  reloj = setTimeout(() => {
+    mostrarError("La aplicación está tardando en responder.", destino);
+  }, 12000);
+
+  marco.src = destino;
+}
+
+// config.js se pide con un valor distinto cada vez: es el archivo que se
+// edita al instalar, y si el navegador lo guarda, los cambios no llegan.
+(function () {
+  const s = document.createElement("script");
+  s.src = "config.js?_=" + Date.now();
+  s.onload = iniciar;
+  s.onerror = () => mostrarError("No se encontró config.js en el servidor.", null);
+  document.head.appendChild(s);
+})();
 </script>
 </body>
 </html>
