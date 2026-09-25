@@ -85,7 +85,7 @@
  */
 
 // ── Única línea que hay que editar ───────────────────────────
-const APP = "https://script.google.com/macros/s/AKfycbz7PC8OK44DZIGdfrRVi0JLtWCPsCdlsPayW3IOiW20OmvnWVIEbkNXeFiec4_9G7nm/exec";
+const APP = "https://script.google.com/macros/s/PEGA_AQUI_TU_ID/exec";
 // ─────────────────────────────────────────────────────────────
 
 /**
@@ -102,7 +102,10 @@ if (params) {
   try { params = localStorage.getItem(CLAVE) || ""; } catch (e) {}
 }
 
-const destino = APP + params;
+// El navegador guarda la página que carga el iframe, y se queda con ella
+// aunque el sistema cambie. Un parámetro distinto en cada apertura obliga
+// a pedirla de nuevo: si no, el socio ve el saldo del día que la abrió.
+const destino = APP + params + (params ? "&" : "?") + "_=" + Date.now();
 
 const marco = document.getElementById("app");
 const carga = document.getElementById("carga");
