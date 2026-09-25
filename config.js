@@ -6,5 +6,5 @@
  */
 window.PZ_CONFIG = {
   // La URL de la aplicación web, la que termina en /exec
-  app: "https://script.google.com/macros/s/AKfycbwYENQWO4zy7aQxYJMYs67liZop-7Be3_5v2zSbEd4vUBLcDU5CD7edRehgjsu6blYZ/exec"
+  app: "PEGA_AQUI_TU_URL"
 };
